@@ -2,6 +2,7 @@ import Pyro4
 import json
 import random
 import socket
+from colorama import init, Fore, Back, Style
 from threading import Thread
 from time import sleep
 
@@ -47,7 +48,7 @@ def cashier_thread():
     daemon = Pyro4.Daemon(myIp)
     global uri
     uri = daemon.register(cashier)
-    print "Cashier on duty : ", uri
+    print_main_title("Cashier on duty : "+ str(uri))
     daemon.requestLoop()
 
 
@@ -96,28 +97,28 @@ def respond(from_person, from_name, msg):
 
 
 def respond_to_hello(from_person, from_name, msg):
-    print from_person + " [" + from_name + "] : " + json.dumps(msg)
+    print_success(from_person + " [" + from_name + "] : " + json.dumps(msg))
     customer = Pyro4.Proxy("PYRONAME:" + from_name)
     customer.listen("Cashier", uri, get_order_question_msg())
     customer._pyroRelease()
 
 
 def respond_to_interaction(from_person, from_name, msg):
-    print from_person + " [" + from_name + "] : " + json.dumps(msg)
+    print_success(from_person + " [" + from_name + "] : " + json.dumps(msg))
     customer = Pyro4.Proxy("PYRONAME:" + from_name)
     customer.listen("Cashier", uri, get_order_question_msg())
     customer._pyroRelease()
 
 
 def respond_to_order_request(from_person, from_name, msg):
-    print from_person + " [" + from_name + "] : " + json.dumps(msg)
+    print_info(from_person + " [" + from_name + "] : " + json.dumps(msg))
     customer = Pyro4.Proxy("PYRONAME:" + from_name)
     customer.listen("Cashier", uri, get_payment_request_msg(msg))
     customer._pyroRelease()
 
 
 def respond_to_payment_request(from_person, from_name, msg):
-    print from_person + " [" + from_name + "] : " + json.dumps(msg)
+    print_info(from_person + " [" + from_name + "] : " + json.dumps(msg))
     customer = Pyro4.Proxy("PYRONAME:" + from_name)
     customer.listen("Cashier", uri, get_payment_made_msg())
     customer._pyroRelease()
@@ -128,7 +129,7 @@ def respond_to_bye(from_person, from_name, msg):
     handling_customer = False
     pending_request_queue = Pyro4.Proxy("PYRONAME:lavic.queue.pendingOrders")
     pending_request_queue.addOrder(get_order_incomplete_msg())
-    print from_person + " [" + from_name + "] : " + json.dumps(msg)
+    print_success(from_person + " [" + from_name + "] : " + json.dumps(msg))
     customer = Pyro4.Proxy("PYRONAME:" + from_name)
     customer.listen("Cashier", uri, get_bye_msg())
     customer._pyroRelease()
@@ -179,6 +180,42 @@ def get_bye_msg():
     return msg
 
 
+
+def print_success( message):
+    print(Back.GREEN + Style.BRIGHT  +  Fore.BLACK + " SUCCESS " + Fore.RESET + Back.RESET + Style.RESET_ALL +  Fore.WHITE + Style.BRIGHT + " : " + str(message))
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def print_info( message):
+    print(Back.BLUE + Style.BRIGHT  +  Fore.WHITE + " INFO " + Fore.RESET + Back.RESET + Style.RESET_ALL +  Fore.WHITE + Style.BRIGHT + " : " + str(message))
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def print_error( message):
+    print( Back.RED + Style.BRIGHT  +  Fore.WHITE + " ERROR " + Fore.RESET + Back.RESET + Style.RESET_ALL +  Fore.WHITE + Style.BRIGHT + " : " + str(message))
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def print_network( message):
+    print( Back.YELLOW + Style.BRIGHT  +  Fore.BLACK + " NETWORK " + Fore.RESET + Back.RESET + Style.RESET_ALL +  Fore.WHITE + Style.BRIGHT + " : " + str(message))
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def print_title(message):
+    print(Fore.GREEN + Style.BRIGHT)
+    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - -")
+    print("                 " + str(message))
+    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - -")
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def print_main_title(message):
+    print(Fore.CYAN + Back.WHITE + Style.BRIGHT)
+    print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+    print(Back.RESET)
+    print( "                        " + str(message).upper()+ "                     ")
+    print(Back.WHITE)
+    print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+    print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+
+def clear_screen():
+    print("\033c")
+
 if __name__ == "__main__":
     global myIp
     myIp = str(socket.gethostbyname(socket.gethostname()))
@@ -188,7 +225,7 @@ if __name__ == "__main__":
     cash_t.start()
     serve_customer_t.join()
     cash_t.join()
-    print "Lavik is closed now"
+    print_title("Lavik is closed now")
 
 
 
