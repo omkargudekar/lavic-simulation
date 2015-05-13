@@ -160,7 +160,7 @@ def get_order_incomplete_msg():
 def get_payment_request_msg(customer_order_msg):
     msg = {}
     msg['messageType'] = "PAYMENT_REQUEST"
-    msg['message'] = ''
+    msg['message'] = 'Your total charges : '
     msg['order'] = calculate_bill(customer_order_msg)
     return msg
 
@@ -168,7 +168,7 @@ def get_payment_request_msg(customer_order_msg):
 def get_payment_made_msg():
     msg = {}
     msg['messageType'] = "PAYMENT_MADE"
-    msg['message'] = ' '
+    msg['message'] = ' Payment Complete.'
     msg['order'] = bill['order']
     return msg
 
