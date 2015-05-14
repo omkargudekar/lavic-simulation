@@ -67,10 +67,11 @@ class Customer(object):
 			self.request_queue = Queue.Queue();
 			self.request_processor = RequestProcessor(self, self.speed)
 			self.request_processor.start()
-			self.display._print_info(self.absoluteName + ' leaves La Victoria')
 			"""Join cashier queue"""
 			self.join_queue();
 			self.daemon.requestLoop()
+            self.display._print_info(self.absoluteName + ' leaves La Victoria')
+
 
 			#print 'SHUTTTING DOWN Daemon'
 		self.active_thread = Thread(target=activate)
