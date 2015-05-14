@@ -16,45 +16,47 @@ class RequestProcessor(Thread):
 
 	def process_message(self, message):
 		
-		print message
+		#print message
 		respond_to = message['fromName']
 		response_message = {}
 		
 		if message['messageType'] == "HELLO":
 			response_message['messageType'] = "HELLO"
-			response_message['message'] = "Hello lawdu. Muh me lega mera?"
+			response_message['message'] = "Hi! Thank you."
 
 		elif message['messageType'] == "INTERACTION":
 			response_message['messageType'] = "HELLO"
-			response_message['message'] = "Hello lawdu. Muh me lega mera?"
+			response_message['message'] = "I am good, how are you?"
 
 		elif message['messageType'] == 'ORDER_REQUEST':
 			response_message['messageType'] = "ORDER_REQUEST"
-			response_message['message'] = "Hello lawdu. Teri gand lunga. Chal ye sab jaldi se de"
+			response_message['message'] = "I will take "
 			response_message['order'] = {}
 			response_message['order']['orderDetails'] = self.customer.getOrderDetails()
 
 		elif message['messageType'] == 'PAYMENT_REQUEST': #will contain order
 			response_message['messageType'] = "PAYMENT_REQUEST"
-			response_message['message'] = "Ye le paise. bhar le apni chaddi me?"
-			print '###########going to save set_receipt'
+			response_message['message'] = "Thank you. Here is the cash."
+			#print '###########going to save set_receipt'
 			self.customer.set_receipt(message['order'])
 
 		elif message['messageType'] == 'PAYMENT_MADE':
 			response_message['messageType'] = "BBYE"
-			response_message['message'] = "ma chuda!"
+			response_message['message'] = "Thank you. Have a great day!"
 
 		elif message['messageType'] == 'ORDER_PREPARED': #will contain order
 
 			if self.customer.checkIfMyOrder(message['order']['tokenNumber']):
-				print str(message['fromName'])
+				#print str(message['fromName'])
 				obj = Pyro4.Proxy(message['fromName'])
-				print  "[[[[[[[]]]]]]]]]]", obj
-				print 'taking order'
+				#print  "[[[[[[[]]]]]]]]]]", obj
+				#print 'taking order'
 				res = obj.take_order()
-				print 'order taken^^^^^^^^^^', res
+				#print 'order taken^^^^^^^^^^', res
+				self.customer.display._print_conversation("server", res['message'])
 				obj._pyroRelease()
 				self.customer.shutdown_customer()
+				self.customer.display._print_info(self.customer.customer_name+ " received his order")
 			return
 
 		elif message['messageType'] == 'BBYE':
@@ -62,7 +64,7 @@ class RequestProcessor(Thread):
 		
 		#sleep(int((randint(1,3)/self.speed)))
 		#json_data = json.loads(response_message)
-		print "!!!!!!!!!>>>>>>>>>>>",response_message
+		#print "!!!!!!!!!>>>>>>>>>>>",response_message
 		self.customer.speak(respond_to, response_message)
 		
 
@@ -78,5 +80,5 @@ class RequestProcessor(Thread):
 				pass
 			
 	def shutdown(self):
-		print 'shutting down worker'
+		#print 'shutting down worker'
 		self.forever = False

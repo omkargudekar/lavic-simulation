@@ -6,6 +6,7 @@ import sys
 import socket
 from time import sleep
 from threading import Thread
+from Display import Display
 from RequestProcessor import RequestProcessor
 
 Pyro4.config.REQUIRE_EXPOSE = True
@@ -20,16 +21,19 @@ speed = {
 class Customer(object):
 
 	def __init__(self, customer_name, speed, queue_to_join):
-		print 'initializing customer ', customer_name
+		#print customer_name + ' enters La Victoria', customer_name
 		self.customer_name = customer_name
 		self.speed = speed
 		self.queue_to_join = queue_to_join
-
+		self.display = Display()
+		self.absoluteName = customer_name.split(".")[2]
+		self.display._print_info(self.absoluteName + ' enters La Victoria')
 		#set customer likings/preferences
 		
 
 	def speak(self, to_person, what):
-		print 'speaking to ', to_person
+		#print 'speaking to ', to_person
+		self.display._print_conversation(self.absoluteName, what['message'])
 		respont_to_person = Pyro4.Proxy(to_person)
 		respont_to_person.listen('customer', self.customer_name, what)
 		respont_to_person._pyroRelease()
@@ -41,11 +45,13 @@ class Customer(object):
 		message_type = json_message['messageType']
 		json_message['fromName'] = name
 		#print 'message', json_message
+		self.display._print_conversation(from_person, json_message['message'])
 		self.request_queue.put(json_message)
 		#print 'enqueued'
 
 	def join_queue(self):
-		print 'Customer joining the cashier queue ', self.customer_name
+		#print 'Customer joining the cashier queue ', self.customer_name
+		self.display._print_info(self.absoluteName + ' joins the queue')
 		self.queue_to_join.register(self.customer_name)
 
 	def ativate_customer(self):
@@ -61,20 +67,21 @@ class Customer(object):
 			self.request_queue = Queue.Queue();
 			self.request_processor = RequestProcessor(self, self.speed)
 			self.request_processor.start()
-
+			self.display._print_info(self.absoluteName + ' leaves La Victoria')
 			"""Join cashier queue"""
 			self.join_queue();
 			self.daemon.requestLoop()
-			print 'SHUTTTING DOWN Daemon'
+
+			#print 'SHUTTTING DOWN Daemon'
 		self.active_thread = Thread(target=activate)
 		self.active_thread.start()
-		print 'customer activated'
+		#print 'customer activated'
 
 	def shutdown_customer(self):
 		self.request_processor.shutdown()
 		Pyro4.locateNS().remove(self.customer_name)
 		self.daemon.shutdown()
-		print 'shutting down customer'
+		#print 'shutting down customer'
 
 	def getOrderDetails(self):
 		menuObj = Pyro4.Proxy("PYRONAME:lavic.menucard")
@@ -94,17 +101,18 @@ class Customer(object):
 	def checkIfMyOrder(self, token_num):
 		#return True
 		try:
-			print 'my token ', self.reciept['order']['tokenNumber']
-			print token_num
+			#print 'my token ', self.reciept['order']['tokenNumber']
+			#print token_num
 			if token_num == self.reciept['order']['tokenNumber']:
-				print 'returning true'
+				#print 'returning true'
+				self.display._print_conversation(self.absoluteName, ' Oh Awesome! My order is ready!')
 				return True
 		except:
 			pass
 		return False
 
 	def set_receipt(self, reciept):
-		print '@@@@@@@@@@saving reciept ', reciept
+		#print '@@@@@@@@@@saving reciept ', reciept
 		self.reciept = reciept
 
 
@@ -140,11 +148,11 @@ if __name__ == "__main__":
 	if (len(sys.argv) != 3):
 		print 'not enough arguments'
 		sys.exit()
-	print 'creating customer'
+	#print 'creating customer'
 	# create_customer('customer1', 1)
 	# print sys.argv[2]
 	# print sys.argv[1]
-	create_customer(sys.argv[2], sys.argv[1])
+	create_customer("Customer-"+sys.argv[2], sys.argv[1])
 	#generate_customers(2,30,1)
 
 
