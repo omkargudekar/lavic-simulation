@@ -34,3 +34,13 @@ sleep 2
 osascript -e 'tell application "Terminal" to do script "python '$current_dir'/lavic_environment/pending_order_queue.py"'
 sleep 2
 osascript -e 'tell application "Terminal" to do script "python '$current_dir'/lavic_environment/menu_card.py '$current_dir'/lavic_environment/menu.json"'
+sleep 2
+osascript -e 'tell application "Terminal" to do script "sh '$current_dir'/cashier/start_cashier.sh"'
+sleep 2
+osascript -e 'tell application "Terminal" to do script "sh '$current_dir'/chef/start_chef.sh"'
+sleep 2
+osascript -e 'tell application "Terminal" to do script "sh '$current_dir'/server/start_server.sh"'
+sleep 2
+osascript -e 'tell application "Terminal" to do script "sh '$current_dir'/customer/start_customer.sh"'
+
+
